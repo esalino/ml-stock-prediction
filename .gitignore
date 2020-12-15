@@ -1,5 +1,5 @@
 .DS_Store
 .idea/
-*.pyc 
+*.pyc
 env/
 saved_models/

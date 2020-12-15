@@ -16,21 +16,28 @@ def train():
     seed_everything()
 
     # configure parameters
-    # num_epochs = 50  # 50 best so far
-    # sequence_length = 80
-    # hidden_dim = 40
-    num_epochs = 60
+    # num_epochs = 30  # 50 best so far
+    # sequence_length = 50
+    # hidden_dim = 30
+    num_epochs = 50
     sequence_length = 50
-    hidden_dim = 100
+    hidden_dim = 50
     output_dim = 1
     num_layers = 1
-    percent_data_for_training = 0.95
-    data_path = "../../raw_data/SPY.csv"
+    percent_data_for_training = 0.90
+    data_path = "../../raw_data/S&P500Daily.csv"
+    #data_path = "../../raw_data/SPY.csv"
 
     x_train_np, x_eval_np, y_train_np, dataframe = data_utils.load_training_data_v2(
         sequence_length,
         percent_data_for_training,
         data_path)
+
+    # x_train_np, x_eval_np, y_train_np, normalized_full_data_set, data_scaler, scalar_close = data_utils.load_training_data(
+    #     sequence_length,
+    #     percent_data_for_training,
+    #     data_path,
+    #     "1993-02-01")
 
     input_dim = x_train_np.shape[2]
 
@@ -46,7 +53,7 @@ def train():
     model = m.create_model(input_dim, hidden_dim, output_dim, num_layers)
     model = model.to(device)
     loss_fn = torch.nn.MSELoss()
-    optimiser = torch.optim.AdamW(model.parameters(), lr=0.001)
+    optimiser = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # Train model
     for t in range(num_epochs):
@@ -77,6 +84,7 @@ def train():
     # Evaluate based on prediction if the next days prediction was in the correct direction
     # i.e. did it predict correctly if tomorrow was an up day or down day
     utils.evaluate_daily_simulation_v2(training_prediction, x_eval_np, dataframe)
+    #utils.evaluate_daily_simulation(normalized_full_data_set, data_scaler, training_prediction, scalar_close, x_eval_np)
 
 
 def seed_everything(seed=1234):

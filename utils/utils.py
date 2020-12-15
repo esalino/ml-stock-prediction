@@ -11,11 +11,11 @@ def evaluate_daily_simulation(normalized_full_data_set, data_scaler, training_pr
 
     # Evaluate based on prediction if the next days prediction was in the correct direction
     # i.e. did it predict correctly if tomorrow was an up day or down day
-    #close_normalized = normalized_full_data_set[:, 3]
-    close_normalized = normalized_full_data_set[:,0]
+    close_normalized = normalized_full_data_set[:, 1]
+    #close_normalized = normalized_full_data_set[:,0]
     close_non_normalized = data_scaler.inverse_transform(normalized_full_data_set)
-    #close_non_normalized = close_non_normalized[:, 3]
-    close_non_normalized = close_non_normalized[:,0]
+    close_non_normalized = close_non_normalized[:, 1]
+    #close_non_normalized = close_non_normalized[:,0]
     count_correct_direction = 0
     start_price = close_non_normalized[len(close_normalized) - batch_test_size - 1]
     end_price =  close_non_normalized[len(close_non_normalized) - 1]
@@ -125,8 +125,11 @@ def evaluate_daily_simulation(normalized_full_data_set, data_scaler, training_pr
 def evaluate_daily_simulation_v2(training_prediction, x_eval_np, dataframe):
     batch_test_size = x_eval_np.shape[0]
 
+    # get the close list for compare. We need previous one dayof predictions.
     raw_close = dataframe['Close']
     raw_close = raw_close[len(raw_close) - batch_test_size - 1:].tolist()
+    log_diff_close = dataframe['Close Log Dif']
+    log_diff_close = log_diff_close[len(log_diff_close) - batch_test_size - 1:].tolist()
 
     training_prediction = np.reshape(training_prediction, batch_test_size)
 
@@ -141,6 +144,8 @@ def evaluate_daily_simulation_v2(training_prediction, x_eval_np, dataframe):
     predicted_down = 0
     predicted_equal = 0
 
+    # Simulate trading at close of each day. We will also short down
+    # day predictions.
     start_price = raw_close[len(raw_close) - batch_test_size - 1]
     end_price = raw_close[len(raw_close) - 1]
     start_cash = 10000
@@ -182,14 +187,22 @@ def evaluate_daily_simulation_v2(training_prediction, x_eval_np, dataframe):
             daily_gain_abs += current_shares * math.fabs(raw_close[i] - raw_close[i - 1])
             if actual_direction == "up":
                 predicted_correct_up += 1
+                print("Correct Up, actual", log_diff_close[i], "predicted", training_prediction[j])
             elif actual_direction == "down":
                 predicted_correct_down += 1
+                print("Correct Down, actual", log_diff_close[i], "predicted", training_prediction[j])
             else:
                 predicted_correct_equal += 1
+                print("Correct Equal, actual", log_diff_close[i], "predicted", training_prediction[j])
         else:
             daily_gain_abs -= current_shares * math.fabs(raw_close[i] - raw_close[i - 1])
+            if actual_direction == "up":
+                print("Wrong Up, actual", log_diff_close[i], "predicted", training_prediction[j])
+            elif actual_direction == "down":
+                print("Wrong Down, actual", log_diff_close[i], "predicted", training_prediction[j])
+            else:
+                print("Wrong Equal, actual", log_diff_close[i], "predicted", training_prediction[j])
 
-        # print("daily_gain_abs ", daily_gain_abs)
         current_gains += daily_gain_abs
         tomorrow_is_long = tomorrow_is_long if j + 1 == len(training_prediction) else training_prediction[j + 1] >= 0
 
@@ -231,6 +244,9 @@ def evaluate_daily_simulation_v2(training_prediction, x_eval_np, dataframe):
     print("predicted up ", predicted_correct_up, "predicted down ", predicted_correct_down, "predicted equal ",
           predicted_correct_equal,
           "total ", total_predicted_correct)
+    total_predicted_count = predicted_up + predicted_down + predicted_equal
+    print("total predicted up %", (predicted_up / total_predicted_count) * 100, "total predicted down %",
+          (predicted_down / total_predicted_count) * 100, "total predicted equal %", (predicted_equal / total_predicted_count) * 100)
     print("(of actual) predicted up % ", (predicted_correct_up / count_actual_up) * 100, "predicted down % ",
           (predicted_correct_down / count_actual_down) * 100)
     print("(of predicted) predicted up % ", (predicted_correct_up / total_predicted_correct) * 100, "predicted down % ",

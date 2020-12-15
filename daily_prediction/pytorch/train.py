@@ -5,6 +5,7 @@ import numpy as np
 import random as random
 import os as os
 
+
 def train():
     # Set device so can use gpu's if available
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -14,21 +15,26 @@ def train():
     seed_everything()
 
     # configure parameters
-    num_epochs = 20 # 50 best so far
+    num_epochs = 50
     sequence_length = 50
-    input_dim = 4
-    hidden_dim = 100
+    hidden_dim = 50
     output_dim = 1
     num_layers = 1
     percent_data_for_training = 1
     start_date = "1993-02-01"
-    # data_path = "../../raw_data/S&P500Daily.csv"
     data_path = "../../raw_data/SPY.csv"
 
-    x_train_np, x_eval_np, y_train_np, train_data_normalized, data_scaler = data_utils.load_training_data(
+    # x_train_np, x_eval_np, y_train_np, train_data_normalized, data_scaler = data_utils.load_training_data(
+    #     sequence_length,
+    #     percent_data_for_training,
+    #     data_path, start_date)
+
+    x_train_np, x_eval_np, y_train_np, dataframe = data_utils.load_training_data_v2(
         sequence_length,
         percent_data_for_training,
-        data_path, start_date)
+        data_path)
+
+    input_dim = x_train_np.shape[2]
 
     # Get as tensors
     x_train = torch.from_numpy(x_train_np).type(torch.Tensor)
@@ -41,7 +47,7 @@ def train():
     model = m.create_model(input_dim, hidden_dim, output_dim, num_layers)
     model = model.to(device)
     loss_fn = torch.nn.MSELoss()
-    optimiser = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimiser = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # Train model
     for t in range(num_epochs):
