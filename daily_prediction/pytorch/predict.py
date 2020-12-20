@@ -20,10 +20,10 @@ def predict():
     hidden_dim = 50
     output_dim = 1
     num_layers = 1
-    model_path = "../../saved_models/pytoch_stocks_daily_model.pth"
+    model_path = "../../saved_models/pytorch_stocks_daily_model.pth"
     data_path = "../../raw_data/SPY_for_prediction.csv"
 
-    eval_data_np, eval_raw_np, scaler = data_utils.load_prediction_data(sequence_length, data_path)
+    eval_data_np, eval_raw_np, scaler = data_utils.load_prediction_data_v2(sequence_length, data_path)
     eval_data = torch.from_numpy(eval_data_np).type(torch.Tensor)
 
     input_dim = eval_data_np.shape[2]

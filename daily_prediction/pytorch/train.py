@@ -68,7 +68,7 @@ def train():
 
         print("Epoch ", t, "MSE: ", loss.item())
 
-    torch.save(model.state_dict(), "../../saved_models/pytoch_stocks_daily_model.pth")
+    torch.save(model.state_dict(), "../../saved_models/pytorch_stocks_daily_model.pth")
 
 def seed_everything(seed=1234):
     random.seed(seed)
