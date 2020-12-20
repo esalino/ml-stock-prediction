@@ -15,9 +15,9 @@ def train():
     seed_everything()
 
     # configure parameters
-    num_epochs = 50
+    num_epochs = 30
     sequence_length = 50
-    hidden_dim = 50
+    hidden_dim = 60
     output_dim = 1
     num_layers = 1
     percent_data_for_training = 1

@@ -74,31 +74,35 @@ def load_training_data_v2(sequence_length, percent_data_for_training, data_path)
     index = 0
     next(reader)
     for row in reader:
+        open_price = round(float(row[1]), 2)
+        high_price = round(float(row[2]), 2)
+        low_price = round(float(row[3]), 2)
+        close_price = round(float(row[4]), 2)
+        volume = float(row[6])
         # we are starting at index once since using change from previous day
         if index >= index_start:
-            close_close = ((float(row[4]) / previous[4]) - 1)
-            open_open = ((float(row[1]) / previous[1]) - 1)
-            high_high = ((float(row[2]) / previous[2]) - 1)
-            low_low = ((float(row[3]) / previous[3]) - 1)
-            close_open = ((float(row[1]) / previous[4]) - 1)
-            open_close = ((float(row[4]) / float(row[1])) - 1)
-            open_high = ((float(row[2]) / float(row[1])) - 1)
-            close_high = ((float(row[2]) / float(row[4])) - 1)
-            low_open = ((float(row[1]) / float(row[3])) - 1)
-            close_low = ((float(row[3]) / float(row[4])) - 1)
-            low_high = ((float(row[2]) / float(row[3])) - 1)
-            volume = ((float(row[6]) / previous[5]) - 1)
+            close_close = (close_price / previous[4]) - 1
+            open_open = (open_price / previous[1]) - 1
+            high_high = (high_price / previous[2]) - 1
+            low_low = (low_price / previous[3]) - 1
+            close_open = (open_price / previous[4]) - 1
+            open_close = (close_price / open_price) - 1
+            open_high = (high_price / open_price) - 1
+            close_high = (high_price / close_price) - 1
+            low_open = (open_price / low_price) - 1
+            close_low = (low_price / close_price) - 1
+            low_high = (high_price / low_price) - 1
 
-            open_close_mid = (float(row[1]) + float(row[4])) / 2
-            high_low_mid = (float(row[2]) + float(row[3])) / 2
+            open_close_mid = (open_price + close_price) / 2
+            high_low_mid = (high_price + low_price) / 2
 
             mid_point_diff = (open_close_mid/high_low_mid) - 1
 
-            #five_day_moving_close = (float(row[4]) / df.loc[index, ['Five Day Moving']]) - 1
-            moving_avg_volume_close = (float(row[5]) / df.loc[index, ['Volume Moving Avg']]) - 1
+            # five_day_moving_close = (close_price / df.at[index, 'Five Day Moving']) - 1
+            moving_avg_volume_close = (volume / df.at[index, 'Volume Moving Avg']) - 1
             processed.append([close_close, open_close, moving_avg_volume_close, mid_point_diff])
 
-        previous = [row[0], float(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[6])]
+        previous = [row[0], open_price, high_price, low_price, close_price, volume]
         index += 1
 
     # remove index 0 to match processed above
@@ -172,31 +176,35 @@ def load_prediction_data_v2(sequence_length, data_path):
     index = 0
     next(reader)
     for row in reader:
+        open_price = round(float(row[1]), 2)
+        high_price = round(float(row[2]), 2)
+        low_price = round(float(row[3]), 2)
+        close_price = round(float(row[4]), 2)
+        volume = float(row[6])
         # we are starting at index once since using change from previous day
         if index >= index_start:
-            close_close = ((float(row[4]) / previous[4]) - 1)
-            open_open = ((float(row[1]) / previous[1]) - 1)
-            high_high = ((float(row[2]) / previous[2]) - 1)
-            low_low = ((float(row[3]) / previous[3]) - 1)
-            close_open = ((float(row[1]) / previous[4]) - 1)
-            open_close = ((float(row[4]) / float(row[1])) - 1)
-            open_high = ((float(row[2]) / float(row[1])) - 1)
-            close_high = ((float(row[2]) / float(row[4])) - 1)
-            low_open = ((float(row[1]) / float(row[3])) - 1)
-            close_low = ((float(row[3]) / float(row[4])) - 1)
-            low_high = ((float(row[2]) / float(row[3])) - 1)
-            volume = ((float(row[6]) / previous[5]) - 1)
+            close_close = (close_price / previous[4]) - 1
+            open_open = (open_price / previous[1]) - 1
+            high_high = (high_price / previous[2]) - 1
+            low_low = (low_price / previous[3]) - 1
+            close_open = (open_price / previous[4]) - 1
+            open_close = (close_price / open_price) - 1
+            open_high = (high_price / open_price) - 1
+            close_high = (high_price / close_price) - 1
+            low_open = (open_price / low_price) - 1
+            close_low = (low_price / close_price) - 1
+            low_high = (high_price / low_price) - 1
 
-            open_close_mid = (float(row[1]) + float(row[4])) / 2
-            high_low_mid = (float(row[2]) + float(row[3])) / 2
+            open_close_mid = (open_price + close_price) / 2
+            high_low_mid = (high_price + low_price) / 2
 
             mid_point_diff = (open_close_mid / high_low_mid) - 1
 
-            # five_day_moving_close = (float(row[4]) / df.loc[index, ['Five Day Moving']]) - 1
-            moving_avg_volume_close = (float(row[5]) / df.loc[index, ['Volume Moving Avg']]) - 1
+            # five_day_moving_close = (close_price / df.at[index, 'Five Day Moving']) - 1
+            moving_avg_volume_close = (volume / df.at[index, 'Volume Moving Avg']) - 1
             processed.append([close_close, open_close, moving_avg_volume_close, mid_point_diff])
 
-        previous = [row[0], float(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[6])]
+        previous = [row[0], open_price, high_price, low_price, close_price, volume]
         index += 1
 
     predict_data = np.array(processed)

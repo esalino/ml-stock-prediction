@@ -17,7 +17,7 @@ def predict():
 
     # configure parameters
     sequence_length = 50
-    hidden_dim = 50
+    hidden_dim = 60
     output_dim = 1
     num_layers = 1
     model_path = "../../saved_models/pytorch_stocks_daily_model.pth"

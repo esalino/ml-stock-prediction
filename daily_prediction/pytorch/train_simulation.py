@@ -19,14 +19,14 @@ def train():
     # num_epochs = 30  # 50 best so far
     # sequence_length = 50
     # hidden_dim = 30
-    num_epochs = 50
+    num_epochs = 30
     sequence_length = 50
-    hidden_dim = 50
+    hidden_dim = 60
     output_dim = 1
     num_layers = 1
-    percent_data_for_training = 0.90
-    data_path = "../../raw_data/S&P500Daily.csv"
-    #data_path = "../../raw_data/SPY.csv"
+    percent_data_for_training = 0.95
+    #data_path = "../../raw_data/S&P500Daily.csv"
+    data_path = "../../raw_data/SPY.csv"
 
     x_train_np, x_eval_np, y_train_np, dataframe = data_utils.load_training_data_v2(
         sequence_length,
