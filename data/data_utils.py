@@ -150,7 +150,7 @@ def load_prediction_data(sequence_length, data_path):
     predict_data = df.to_numpy()
 
     data_scaler = load(open('../../saved_models/data_scaler.pkl', 'rb'))
-    predict_data_normalized = data_scaler.fit_transform(predict_data)
+    predict_data_normalized = data_scaler.transform(predict_data)
 
     predict_sequence = [predict_data_normalized[len(predict_data_normalized) - sequence_length:len(predict_data_normalized)]]
 
@@ -210,7 +210,7 @@ def load_prediction_data_v2(sequence_length, data_path):
     predict_data = np.array(processed)
 
     data_scaler = load(open('../../saved_models/data_scaler.pkl', 'rb'))
-    predict_data_normalized = data_scaler.fit_transform(predict_data)
+    predict_data_normalized = data_scaler.transform(predict_data)
 
     predict_sequence = [predict_data_normalized[len(predict_data_normalized) - sequence_length:len(predict_data_normalized)]]
 
