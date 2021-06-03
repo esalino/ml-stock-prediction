@@ -36,9 +36,13 @@ def predict():
         model.eval()
         data_predict = model(eval_data)
 
-    #scalar_close = load(open('../../saved_models/close_scaler.pkl', 'rb'))
-    #data_predict = data_predict.data.numpy()
-    #data_predict = scalar_close.inverse_transform(data_predict)
+    #script_model = torch.jit.load("../../saved_models/scripted_stocks_daily_model.pt")
+    #print(script_model)
+    #print(script_model.code)
+
+    scalar_close = load(open('../../saved_models/close_scaler.pkl', 'rb'))
+    data_predict = data_predict.data.numpy()
+    data_predict = scalar_close.inverse_transform(data_predict)
 
     print(data_predict)
 
