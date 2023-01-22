@@ -20,8 +20,8 @@ def predict():
     hidden_dim = 60
     output_dim = 1
     num_layers = 1
-    model_path = "../../saved_models/pytorch_stocks_daily_model.pth"
-    data_path = "../../raw_data/SPY_for_prediction.csv"
+    model_path = "./saved_models/pytorch_stocks_daily_model.pth"
+    data_path = "./raw_data/SPY_for_prediction.csv"
 
     eval_data_np, eval_raw_np, scaler = data_utils.load_prediction_data_v2(sequence_length, data_path)
     eval_data = torch.from_numpy(eval_data_np).type(torch.Tensor)
@@ -36,7 +36,7 @@ def predict():
         model.eval()
         data_predict = model(eval_data)
 
-    #script_model = torch.jit.load("../../saved_models/scripted_stocks_daily_model.pt")
+    #script_model = torch.jit.load("./saved_models/scripted_stocks_daily_model.pt")
     #print(script_model)
     #print(script_model.code)
 

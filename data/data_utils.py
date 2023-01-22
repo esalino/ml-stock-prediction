@@ -8,8 +8,8 @@ import csv
 import math
 
 def load_training_data_monthly(sequence_length, percent_data_for_training):
-    data_path = "../../raw_data/SPY.csv"
-    data_path_tnx = "../../raw_data/^TNX.csv"
+    data_path = "./raw_data/SPY.csv"
+    data_path_tnx = "./raw_data/^TNX.csv"
     index_start = 50
     df = pd.read_csv(data_path, usecols=['Date', 'Open', 'High', 'Low', 'Close', 'Volume'], parse_dates=True)
     df_tnx = pd.read_csv(data_path_tnx, usecols=['Date', 'Open', 'High', 'Low', 'Close'], index_col='Date', parse_dates=True)

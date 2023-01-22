@@ -25,8 +25,8 @@ def train():
     output_dim = 1
     num_layers = 1
     percent_data_for_training = 0.95
-    #data_path = "../../raw_data/S&P500Daily.csv"
-    data_path = "../../raw_data/SPY.csv"
+    #data_path = "./raw_data/S&P500Daily.csv"
+    data_path = "./raw_data/SPY.csv"
 
     x_train_np, x_eval_np, y_train_np, dataframe = data_utils.load_training_data_v2(
         sequence_length,

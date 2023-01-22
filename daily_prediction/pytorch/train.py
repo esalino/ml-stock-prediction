@@ -22,7 +22,7 @@ def train():
     num_layers = 1
     percent_data_for_training = 1
     start_date = "1993-02-01"
-    data_path = "../../raw_data/SPY.csv"
+    data_path = "./raw_data/SPY.csv"
 
     # x_train_np, x_eval_np, y_train_np, train_data_normalized, data_scaler = data_utils.load_training_data(
     #     sequence_length,
@@ -68,7 +68,7 @@ def train():
 
         print("Epoch ", t, "MSE: ", loss.item())
 
-    torch.save(model.state_dict(), "../../saved_models/pytorch_stocks_daily_model.pth")
+    torch.save(model.state_dict(), "./saved_models/pytorch_stocks_daily_model.pth")
 
 def seed_everything(seed=1234):
     random.seed(seed)
