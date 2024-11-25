@@ -1,4 +1,3 @@
 setup-dev-env:
-	python3 -m venv .venv;
-	source .venv/bin/activate;
-	pip install -r requirements.txt;
+	poetry config virtualenvs.in-project true;
+	poetry install;

@@ -1,4 +1,4 @@
-import daily_prediction.pytorch.model as m
+import prediction.model as m
 import data.data_utils as data_utils
 import torch
 import numpy as np
@@ -16,14 +16,14 @@ def predict():
     seed_everything()
 
     # configure parameters
-    sequence_length = 50
+    sequence_length = 30
     hidden_dim = 60
     output_dim = 1
     num_layers = 1
-    model_path = "./saved_models/pytorch_stocks_daily_model.pth"
-    data_path = "./raw_data/SPY_for_prediction.csv"
+    model_path = "./saved_models/pytorch_stocks_weekly_model.pth"
+    data_path = "./raw_data/SPY.csv"
 
-    eval_data_np, eval_raw_np, scaler = data_utils.load_prediction_data_v2(sequence_length, data_path)
+    eval_data_np, eval_raw_np, scaler = data_utils.load_prediction_data_daily(sequence_length, data_path)
     eval_data = torch.from_numpy(eval_data_np).type(torch.Tensor)
 
     input_dim = eval_data_np.shape[2]
@@ -36,11 +36,7 @@ def predict():
         model.eval()
         data_predict = model(eval_data)
 
-    #script_model = torch.jit.load("./saved_models/scripted_stocks_daily_model.pt")
-    #print(script_model)
-    #print(script_model.code)
-
-    scalar_close = load(open('../../saved_models/close_scaler.pkl', 'rb'))
+    scalar_close = load(open('./saved_models/close_scaler_daily.pkl', 'rb'))
     data_predict = data_predict.data.numpy()
     data_predict = scalar_close.inverse_transform(data_predict)
 
