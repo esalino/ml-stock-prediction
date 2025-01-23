@@ -7,9 +7,9 @@ import torch
 def train_weekly():
     # configure parameters
     num_epochs = 40
-    sequence_length = 30
-    hidden_dim = 60
-    percent_data_for_training = 1
+    sequence_length = 80
+    hidden_dim = 70
+    percent_data_for_training = .85
 
     data_path = "./raw_data/SPY.csv"
 
@@ -22,7 +22,7 @@ def train_weekly():
 
     if (percent_data_for_training < 1):
         training_prediction = model_utils.run_prediction(model, x_eval_np)
-        utils.evaluate_weekly_simulation_v4(training_prediction, x_eval_np, dataframe)
+        utils.evaluate_simulation_vbt(training_prediction, x_eval_np, dataframe, 5)
     else:
         torch.save(model.state_dict(), "./saved_models/pytorch_stocks_weekly_model.pth")
 

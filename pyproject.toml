@@ -12,6 +12,10 @@ pandas = "^2.0.2"
 scikit-learn = "^1.2.2"
 torch = "^2.0.1"
 pandas-ta = "^0.3.14b0"
+matplotlib = "^3.9.3"
+vectorbt = "^0.26.2"
+kaleido = "0.2.1"
+nbformat = "^5.10.4"
 
 
 [tool.poetry.group.dev.dependencies]

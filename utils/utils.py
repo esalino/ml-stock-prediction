@@ -2,6 +2,10 @@ import math
 import numpy as np
 from datetime import datetime
 import calendar
+import pandas as pd
+import pandas_ta as ta
+import matplotlib.pyplot as plt
+import vectorbt as vbt
 
 
 def evaluate_daily_simulation_v3(training_prediction, x_eval_np, dataframe):
@@ -86,42 +90,6 @@ def evaluate_daily_simulation_v3(training_prediction, x_eval_np, dataframe):
     print("Total Days Predicted: ", len(training_prediction))
     print("Days Predicted Correctly: ", count_correct_direction)
     print("Predicted Rate: ", (count_correct_direction / len(training_prediction)) * 100)
-
-
-def evaluate_daily_simulation(training_prediction, x_eval_np, dataframe):
-    batch_test_size = x_eval_np.shape[0]
-
-    dates = dataframe['Date']
-    dates = dates[len(dates) - batch_test_size:].tolist()
-    raw_close = dataframe['Close']
-    raw_close = raw_close[len(raw_close) - batch_test_size:].tolist()
-    raw_open = dataframe['Open']
-    raw_open = raw_open[len(raw_open) - batch_test_size:].tolist()
-
-    training_prediction = np.reshape(training_prediction, batch_test_size)
-
-    count_correct_direction = 0
-
-    for i in range(1, len(training_prediction)):
-        actual_direction = "equal"
-        if raw_close[i] > raw_close[i - 1]:
-            actual_direction = "up"
-        elif raw_close[i] < raw_close[i - 1]:
-            actual_direction = "down"
-
-        prediction_direction = "equal"
-        if training_prediction[i - 1] > 0:
-            prediction_direction = "up"
-        elif training_prediction[i - 1] < 0:
-            prediction_direction = "down"
-
-        is_correct = actual_direction == prediction_direction or actual_direction == "equal"
-        if is_correct:
-            count_correct_direction += 1
-
-    print("Total Days Predicted: ", len(training_prediction - 1))
-    print("Days Predicted Correctly: ", count_correct_direction)
-    print("Predicted Rate: ", (count_correct_direction / (len(training_prediction) - 1)) * 100)
 
 
 def getIndexForAllStartDaysWeekly(dates):
@@ -258,7 +226,7 @@ def evaluate_weekly_simulation_v3(training_prediction, x_eval_np, dataframe):
     print("Predicted Rate: ", (count_correct_direction / len(first_days)) * 100)
 
 
-def evaluate_weekly_simulation_v4(training_prediction, x_eval_np, dataframe):
+def evaluate_simulation(training_prediction, x_eval_np, dataframe, offset):
     batch_test_size = x_eval_np.shape[0]
 
     # get the close list for compare. We need previous one dayof predictions.
@@ -272,100 +240,65 @@ def evaluate_weekly_simulation_v4(training_prediction, x_eval_np, dataframe):
     training_prediction = np.reshape(training_prediction, batch_test_size)
 
     count_correct_direction = 0
+    count_correct_down = 0
+    count_actual_down = 0
+    count_predicted_down = 0
 
-    for i in range(5, len(training_prediction)):
-        actual_direction = "equal"
-        if raw_close[i] > raw_close[i - 5]:
-            actual_direction = "up"
-        elif raw_close[i] < raw_close[i - 5]:
-            actual_direction = "down"
-
+    for i in range(offset, len(training_prediction)):
         prediction_direction = "equal"
-        if training_prediction[i - 5] > 0:
+        if training_prediction[i - offset] > 0:
             prediction_direction = "up"
-        elif training_prediction[i - 5] < 0:
+        else:
             prediction_direction = "down"
+            count_predicted_down += 1
+
+        actual_direction = "equal"
+        if raw_close[i] > raw_close[i - offset]:
+            actual_direction = "up"
+        elif raw_close[i] < raw_close[i - offset]:
+            actual_direction = "down"
+            count_actual_down += 1
+            if prediction_direction == "down":
+                count_correct_down += 1
+                print("Down Prediction Correct: ", training_prediction[i - offset])
+
+        if prediction_direction == "down" and actual_direction != "down":
+            print("Down Prediction Wrong: ", training_prediction[i - offset])
 
         is_correct = actual_direction == prediction_direction or actual_direction == "equal"
         if is_correct:
             count_correct_direction += 1
 
-    print("Total Days Predicted: ", len(training_prediction) - 5)
+    print("Total Days Predicted: ", len(training_prediction) - offset)
     print("Days Predicted Correctly: ", count_correct_direction)
-    print("Predicted Rate: ", (count_correct_direction / (len(training_prediction) - 5)) * 100)
+    print("Predicted Rate: ", (count_correct_direction / (len(training_prediction) - offset)) * 100)
+    print("Days Predicted Down: ", count_predicted_down)
+    print("Days Predicted Down Correctly: ", count_correct_down)
+    print("Days Actual Down: ", count_actual_down)
+    print("Predicted Down Rate: ", (count_correct_down / count_predicted_down) * 100)
 
 
-def evaluate_weekly_simulation(training_prediction, x_eval_np, dataframe):
+def evaluate_simulation_vbt(training_prediction, x_eval_np, dataframe, offset):
     batch_test_size = x_eval_np.shape[0]
 
     # get the close list for compare. We need previous one dayof predictions.
     dates = dataframe['Date']
-    dates = dates[len(dates) - batch_test_size - 1:].tolist()
-    start_index = getIndexForFirstTradingDay(dates)
-    raw_open = dataframe['Open']
-    raw_open = raw_open[len(raw_open) - batch_test_size - 1:].tolist()
+    dates = dates[len(dates) - batch_test_size:].tolist()
     raw_close = dataframe['Close']
-    raw_close = raw_close[len(raw_close) - batch_test_size - 1:].tolist()
+    raw_close = raw_close[len(raw_close) - batch_test_size:].tolist()
+    raw_open = dataframe['Open']
+    raw_open = raw_open[len(raw_open) - batch_test_size:].tolist()
+
+    df = pd.DataFrame({'Date': dates, 'Close': raw_close})
 
     training_prediction = np.reshape(training_prediction, batch_test_size)
 
-    # Simulate trading at start of new week. We will also short down
-    # weekly predictions.
-    start_cash = 10000
-    cash = start_cash
-    is_long = False
+    df['Prediction'] = pd.Series(training_prediction)
 
-    buy_hold_shares = math.floor(start_cash / raw_open[start_index])
-    buy_hold_invested = buy_hold_shares * raw_open[start_index]
-    buy_hold_cash = start_cash - buy_hold_invested
-    buy_hold_cash += (buy_hold_shares * raw_open[len(raw_open) - 1])
+    df["Signal"] = df["Prediction"] >= 0
+    signals = df.ta.tsignals(df.Signal, asbool=True, append=True)
 
-    count_correct_direction = 0
-    current_shares = 0
+    pf = vbt.Portfolio.from_signals(df.Close, entries=signals.TS_Entries, exits=signals.TS_Exits, freq="D", init_cash=10_000, fees=0.0, slippage=0.0)
 
-    i = start_index
-    while i < len(raw_open):
-        date_obj = datetime.strptime(dates[i], '%Y-%m-%d')
-        day_of_week_number = calendar.weekday(date_obj.year, date_obj.month, date_obj.day)
-        end_week_index = getIndexForNextEndOfWeek(i, day_of_week_number, dates)
-        if end_week_index == -1:
-            break
-
-        actual_direction = "equal"
-        if raw_close[i] > raw_close[i - 1]:
-            actual_direction = "up"
-        elif raw_close[i] < raw_close[i - 1]:
-            actual_direction = "down"
-
-        prediction_direction = "equal"
-        if training_prediction[i - 2] > 0:
-            prediction_direction = "up"
-        elif training_prediction[i - 2] < 0:
-            prediction_direction = "down"
-
-        is_correct = actual_direction == prediction_direction or actual_direction == "equal"
-        if is_correct:
-            count_correct_direction += 1
-
-        prediction = training_prediction[i - 1]
-        if prediction > 0:
-            if not is_long:
-                current_shares = math.floor(cash / raw_open[i])
-                current_invested = current_shares * raw_open[i]
-                cash -= current_invested
-                is_long = True
-        elif prediction < 0:
-            if is_long:
-                cash += (current_shares * raw_open[i])
-                current_shares = 0
-                is_long = False
-
-        i = end_week_index + 1
-
-    if is_long:
-        cash += (current_shares * raw_open[len(raw_open) - 1])
-        current_shares = 0
-        is_long = False
-
-    print("Buy and Hold Final Cash: ", buy_hold_cash)
-    print("Weekly Model Final Cash: ", cash)
+    pf.trades.plot(title="Trades", height=500, width=1000).show()
+    print(pf.stats())
